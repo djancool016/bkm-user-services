@@ -2,6 +2,7 @@ const UnitTestFramework = require("../unit.test.framework")
 const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
 const UserModel = require("../../models/user.model")
+const {migration} = require('../../migrations')
 
 const validUser = {
     roleId: 1,
@@ -121,6 +122,7 @@ const test = new UnitTestFramework(testCases, testModule)
 test.setBeforeAll = async () => {
     return await db.connect().then(async db => {
         await truncateAll(db)
+        await migration(db)
         await seedTables(db)
     })
 }

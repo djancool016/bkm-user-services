@@ -3,50 +3,50 @@ const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
 
 const testObj = {
-    // register: [
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 2, username: 'new_user', password: 'oiewjuhfdusif123', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
-    //         output: {httpCode: 201, status: true, message: 'Created'},
-    //         description: 'Valid user registration should return Http 201'
-    //     },
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 1, username: 'admin', password: 'oiewjuhfdusif123', email: 'existing_user@example.com', name: 'Existing User', phone: '0987654321', address: 'Bandung, Indonesia', nik: '3210987654321'},
-    //         output: {httpCode: 409, code: 'CONFLICT'},
-    //         description: 'Duplicate user registration should return Http Error 409'
-    //     },
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 2, username: '', password: 'new_password', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
-    //         output: {httpCode: 400, code: 'BAD_REQUEST'},
-    //         description: 'Empty username should return Http Error 400'
-    //     },
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 2, username: 'new_user', password: '', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
-    //         output: {httpCode: 400, code: 'BAD_REQUEST'},
-    //         description: 'Empty password should return Http Error 400'
-    //     },
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 2, username: 'new_user', password: 'new_password', email: '', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
-    //         output: {httpCode: 400, code: 'BAD_REQUEST'},
-    //         description: 'Empty email should return Http Error 400'
-    //     },
-    //     {
-    //         method: 'POST',
-    //         endpoint: '/register',
-    //         input: {roleId: 2, username: '', password: '', email: '', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
-    //         output: {httpCode: 400, code: 'BAD_REQUEST'},
-    //         description: 'Empty username, password, and email should return Http Error 400'
-    //     }
-    // ],
+    register: [
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 2, username: 'new_user', password: 'oiewjuhfdusif123', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
+            output: {httpCode: 201, status: true, message: 'Created'},
+            description: 'Valid user registration should return Http 201'
+        },
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 1, username: 'admin', password: 'oiewjuhfdusif123', email: 'existing_user@example.com', name: 'Existing User', phone: '0987654321', address: 'Bandung, Indonesia', nik: '3210987654321'},
+            output: {httpCode: 409, code: 'CONFLICT'},
+            description: 'Duplicate user registration should return Http Error 409'
+        },
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 2, username: '', password: 'new_password', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
+            output: {httpCode: 400, code: 'BAD_REQUEST'},
+            description: 'Empty username should return Http Error 400'
+        },
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 2, username: 'new_user', password: '', email: 'new_user@example.com', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
+            output: {httpCode: 400, code: 'BAD_REQUEST'},
+            description: 'Empty password should return Http Error 400'
+        },
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 2, username: 'new_user', password: 'new_password', email: '', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
+            output: {httpCode: 400, code: 'BAD_REQUEST'},
+            description: 'Empty email should return Http Error 400'
+        },
+        {
+            method: 'POST',
+            endpoint: '/register',
+            input: {roleId: 2, username: '', password: '', email: '', name: 'New User', phone: '1234567890', address: 'Jakarta, Indonesia', nik: '1234567890123'},
+            output: {httpCode: 400, code: 'BAD_REQUEST'},
+            description: 'Empty username, password, and email should return Http Error 400'
+        }
+    ],
     login: [
         {
             method: 'POST',

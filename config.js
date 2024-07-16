@@ -1,15 +1,17 @@
 require('dotenv').config()
 
-module.exports = {
+const config = {
     // database configuration
     db_config: {
-        host: 'localhost',
-        user: 'root',
-        password: process.env.LOCAL_DB_PASSWORD,
-        database: 'bkm_db_test'
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB
     },
-    logging: true,
-    resetTables: true,
-    migrating: true,
-    seeding: true
+    logging: process.env.CONSOLE_LOG === '1',
+    resetTables: process.env.TRUNCATING === '1',
+    migrating: process.env.MIGRATING === '1',
+    seeding: process.env.SEEDING === '1'
 }
+
+module.exports = config

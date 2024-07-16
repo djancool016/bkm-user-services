@@ -3,6 +3,7 @@ const UnitTestFramework = require('../unit.test.framework')
 const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
 const { dataLogger } = require('../../utils/httpLogger')
+const {migration} = require('../../migrations')
 
 const activeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOjEsIm5hbWUiOiJEd2lKIiwiaWF0Ijo3MjcyNzQ1NTQwfQ.TyOgejLi1BeNzhIO1oojROgv37HMTL6K0ZGCvDWweoI'
 const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOjEsIm5hbWUiOiJEd2lKIiwiaWF0IjoxNjU2MTI5MTgxfQ.YRiKrJ1Zmc6GF_iKNr9G_rj_lFja3c-UEcGW903OJ3k'
@@ -225,6 +226,7 @@ const test = new UnitTestFramework(testCases, testModule())
 test.setBeforeAll = async () => {
     return await db.connect().then(async db => {
         await truncateAll(db)
+        await migration(db)
         await seedTables(db)
     })
 }

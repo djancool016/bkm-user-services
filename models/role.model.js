@@ -1,4 +1,4 @@
-const QueryBuilder = require("../utils/QueryBuilder");
+const QueryBuilder = require("../utils/queryBuilder");
 const BaseModel = require("./bese.model");
 
 const init = {

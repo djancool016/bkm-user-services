@@ -1,8 +1,9 @@
-const QueryBuilder = require('../../utils/QueryBuilder')
+const QueryBuilder = require('../../utils/queryBuilder')
 const BaseModel = require('../../models/bese.model')
 const UnitTestFramework = require("../unit.test.framework")
 const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
+const {migration} = require('../../migrations')
 
 const init = {
     table: 'users',
@@ -159,6 +160,7 @@ const test = new UnitTestFramework(testCases, testModule)
 test.setBeforeAll = async () => {
     return await db.connect().then(async db => {
         await truncateAll(db)
+        await migration(db)
         await seedTables(db)
     })
 }
