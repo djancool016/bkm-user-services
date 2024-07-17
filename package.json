@@ -4,8 +4,8 @@
   "description": "**Project:** MyExpressRestFramework is a lightweight RESTful API framework built using Express.js",
   "main": "index.js",
   "scripts": {
-    "dev": "dotenv -e .env.development nodemon app.js",
-    "test": "dotenv -e .env.test jest --detectOpenHandles --runInBand --"
+    "dev": "cross-env NODE_ENV=development nodemon app.js",
+    "test": "cross-env NODE_ENV=test jest --detectOpenHandles --runInBand"
   },
   "keywords": [],
   "author": "Dwi Julianto",
@@ -22,7 +22,6 @@
   "devDependencies": {
     "@types/jest": "^29.5.6",
     "cross-env": "^7.0.3",
-    "dotenv-cli": "^7.4.2",
     "jest": "^29.7.0",
     "nodemon": "^3.0.1",
     "supertest": "^6.3.4"
