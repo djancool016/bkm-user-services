@@ -16,12 +16,12 @@ class TokenManager {
      * @param {Number} expiresIn token expiration in second (default = 3600)
      * @returns string token
      */
-    static async generateToken(payload, secret, expiresIn = 36000) {
+    static async generateToken(payload, secret, expiresIn = 3600) {
         try {
             if(!payload || Object.keys(payload).length == 0) throw errorCode.ER_JWT_EMPTY_PAYLOAD
             if(!secret) throw errorCode.ER_JWT_EMPTY_SIGNATURE
             if(expiresIn <= 0) throw errorCode.ER_JWT_EXPIRED
-            return await signAsync(payload, secret, { expiresIn })
+            return await signAsync(payload, secret, payload.exp ? {} : { expiresIn })
 
         } catch (error) {
             throw errorHandler(error)
@@ -39,20 +39,23 @@ class TokenManager {
             if (!token.startsWith('eyJ')) {
                 throw errorCode.ER_JWT_MALFORMED
             }
-                
             const payload = await verifyAsync(token, secret)
-
             if(payload) {
-                // Check if 'iat' (issued at) is present and valid
-                if (!payload.iat || Date.now() >= payload.iat * 1000) {
-                    throw errorCode.ER_JWT_EXPIRED
-                }
+                if(!payload.iat || !payload.exp) throw errorCode.ER_JWT_EXPIRED
+                if(payload.iat > payload.exp) throw errorCode.ER_JWT_EXPIRED
+
+                const currentTime = Math.floor(Date.now() / 1000)
+                const expiredTime = payload.exp - currentTime
+                if(expiredTime <= 0) throw errorCode.ER_JWT_EXPIRED
+
                 return payload
             }
 
         } catch (error) {
             if(error.message == 'invalid signature'){
                 throw errorHandler(errorCode.ER_JWT_SIGNATURE_MISMATCH)
+            }else if(error.message == 'jwt expired'){
+                throw errorHandler(errorCode.ER_JWT_EXPIRED)
             }
             throw errorHandler(error)
         }

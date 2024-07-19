@@ -15,7 +15,7 @@ router.post('/auth', user.authorizeUser, sendResponse)
 router.post('/logout', user.logout, sendResponse)
 
 // Find user by parameter id
-router.get('/profile', user.profile, sendResponse)
+router.post('/profile', user.profile, sendResponse)
 
 // Find user by parameter id
 router.get('/:id', user.read, sendResponse)

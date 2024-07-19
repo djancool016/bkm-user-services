@@ -28,12 +28,14 @@ class UnitTestFramework {
                 test(description, async () => {
                     try {
                         let result
-                        if (Array.isArray(input)) {
+                        let newInput = await resolveNestedPromises(input)
+                        
+                        if (Array.isArray(newInput)) {
                             // If input is an array, spread it as multiple parameters
-                            result = async () => this.testModule[method](...input)
+                            result = async () => this.testModule[method](...newInput)
                         } else {
                             // Otherwise, use input as a single parameter
-                            result = async () => this.testModule[method](input)
+                            result = async () => this.testModule[method](newInput)
                         }
                         // Compare test result with expected output
                         this.resultBuilder(await result(), output)
@@ -152,6 +154,35 @@ function hasRandomValue(obj) {
         }
     }
     return false
+}
+
+async function resolveNestedPromises(obj) {
+    if (obj === null || typeof obj !== 'object') {
+        // Base case: If it's not an object, return it as-is
+        return obj
+    }
+
+    // Create an array of promises to handle
+    const keys = Object.keys(obj)
+    const promises = keys.map(async key => {
+        const value = obj[key]
+        if (value instanceof Promise) {
+            // If the value is a promise, await it
+            return [key, await value]
+        } else if(Array.isArray(value)){
+            return [key, value]
+        }else if (typeof value === 'object') {
+            // If the value is an object, recursively resolve its properties
+            return [key, await resolveNestedPromises(value)]
+        } else {
+            // If the value is neither a promise, object, nor array, return it as-is
+            return [key, value]
+        }
+    })
+
+    // Resolve all promises and construct a new object
+    const resolvedEntries = await Promise.all(promises)
+    return Object.fromEntries(resolvedEntries)
 }
 
 module.exports = UnitTestFramework

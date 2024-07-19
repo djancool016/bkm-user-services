@@ -34,16 +34,27 @@ class ApiTestFramework extends UnitTestFramework {
                                 'Content-Type': 'application/json',
                             }
                         }
-                        if (httpMethod.toLowerCase() === 'get') {
-                            response = await axios.get(`${this.baseURL}${endpoint}`, input, config)
-                        } else if (httpMethod.toLowerCase() === 'post') {
-                            response = await axios.post(`${this.baseURL}${endpoint}`, input, config)
-                        } else if (httpMethod.toLowerCase() === 'put') {
-                            response = await axios.put(`${this.baseURL}${endpoint}`, input, config)
-                        } else if (httpMethod.toLowerCase() === 'delete') {
-                            response = await axios.delete(`${this.baseURL}${endpoint}`, input, config)
+                        // Add headers for access token and refresh token from cookies
+                        if (input.cookies) {
+                            const accessToken = await input.cookies.accessToken
+                            const refreshToken = await input.cookies.refreshToken
+                            config.headers['Cookie'] = `accessToken=${accessToken}; refreshToken=${refreshToken}`
                         }
-                        const jsonResponse = response.data
+                        switch (httpMethod.toLowerCase()) {
+                            case 'get':
+                                response = await axios.get(`${this.baseURL}${endpoint}`, { params: input }, config)
+                                break
+                            case 'post':
+                                response = await axios.post(`${this.baseURL}${endpoint}`, input, config)
+                                break
+                            case 'put':
+                                response = await axios.put(`${this.baseURL}${endpoint}`, input, config)
+                                break
+                            case 'delete':
+                                response = await axios.delete(`${this.baseURL}${endpoint}`, { data: input }, config)
+                                break
+                        }
+                        const jsonResponse = await response.data
                         // Compare test result with expected output
                         this.resultBuilder(jsonResponse, output)
                     } catch (error) {

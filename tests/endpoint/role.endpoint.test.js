@@ -1,6 +1,8 @@
 const ApiTestFramework = require('../api.test.framework')
 const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
+const {migration} = require('../../migrations')
+
 
 const testObj = {
     findByPk: [
@@ -65,7 +67,7 @@ const testObj = {
         {
             method: 'POST',
             endpoint: '/',
-            input: {name: 'Guest', description: 'Guest user'},
+            input: {id: 999, name: 'Guest', description: 'Guest user'},
             output: {httpCode: 201, data: {affectedRows: 1}},
             description: 'should create a new role with name Guest'
         },
@@ -96,10 +98,10 @@ const testObj = {
     delete: [
         {
             method: 'DELETE',
-            endpoint: '/2',
+            endpoint: '/999',
             input: {},
             output: {data: { affectedRows: 1 }},
-            description: 'should delete role with id 2'
+            description: 'should delete role with id 999'
         },
         {
             method: 'DELETE',
@@ -117,6 +119,7 @@ const test = new ApiTestFramework(testObj, baseURL)
 test.setBeforeAll = async () => {
     return await db.connect().then(async db => {
         await truncateAll(db)
+        await migration(db)
         await seedTables(db)
     })
 }

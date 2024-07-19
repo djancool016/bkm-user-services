@@ -4,53 +4,56 @@ const {db, pool, truncateAll} = require('../../database').init()
 const {seedTables} = require('../../seeders')
 const { dataLogger } = require('../../utils/httpLogger')
 const {migration} = require('../../migrations')
+const TokenManager = require('../../utils/tokenManager')
 
-const activeToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOjEsIm5hbWUiOiJEd2lKIiwiaWF0Ijo3MjcyNzQ1NTQwfQ.TyOgejLi1BeNzhIO1oojROgv37HMTL6K0ZGCvDWweoI'
-const expiredToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiaWQiOjEsIm5hbWUiOiJEd2lKIiwiaWF0IjoxNjU2MTI5MTgxfQ.YRiKrJ1Zmc6GF_iKNr9G_rj_lFja3c-UEcGW903OJ3k'
+const accessToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.ACCESS_TOKEN_SECRET)
+const refreshToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.REFRESH_TOKEN_SECRET)
+const expiredAccessToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.ACCESS_TOKEN_SECRET, 1)
+const expiredRefreshToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.REFRESH_TOKEN_SECRET, 1)
 
 const testCases = {
     rotateToken: [
         {
-            input: {cookies: {accessToken: activeToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken, refreshToken}},
             output: {httpCode: 200, data: {refreshToken: 'random string', accessToken: 'random string'}},
             description: 'Success should generate new accessToken and refreshToken'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: 'invalid_token'}},
+            input: {cookies: {accessToken, refreshToken: 'invalid_token'}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid token should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: undefined}},
+            input: {cookies: {accessToken, refreshToken: undefined}},
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No token should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: expiredToken}},
+            input: {cookies: {accessToken, refreshToken: expiredRefreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_EXPIRED'},
             description: 'Expired token should return Http Error 401'
         },{
-            input: {cookies: {accessToken: expiredToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken: expiredAccessToken, refreshToken}},
             output: {httpCode: 200, data: {refreshToken: 'random string', accessToken: 'random string'}},
             description: 'Expired accessToken and active refreshToken should generate new accessToken and refreshToken'
         }
     ],
     authorizeUser: [
         {
-            input: {cookies: {accessToken: activeToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken, refreshToken}},
             output: {httpCode: 200, data: {id: 1, username: 'admin'}},
             description: 'Success should return user data'
         },{
-            input: {cookies: {accessToken: 'invalid_token', refreshToken: activeToken}},
+            input: {cookies: {accessToken: 'invalid_token', refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid accessToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: 'invalid_token'}},
+            input: {cookies: {accessToken, refreshToken: 'invalid_token'}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid refreshToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: undefined, refreshToken: activeToken}},
+            input: {cookies: {accessToken: undefined, refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No accessToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: undefined}},
+            input: {cookies: {accessToken, refreshToken: undefined}},
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No refreshToken should return Http Error 401'
         },{
@@ -112,23 +115,23 @@ const testCases = {
             output: {httpCode: 403, code: 'ER_ACCESS_DENIED_ERROR'},
             description: 'Empty username and password should return Http Error 400'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken, refreshToken}},
             output: {httpCode: 200, data: {id: 1, username: 'admin'}},
             description: 'Valid tokens should return Http 200 and user data'
         },{
-            input: {cookies: {accessToken: 'invalid_token', refreshToken: activeToken}},
+            input: {cookies: {accessToken: 'invalid_token', refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid accessToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: 'invalid_token'}},
+            input: {cookies: {accessToken, refreshToken: 'invalid_token'}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid refreshToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: undefined, refreshToken: activeToken}},
+            input: {cookies: {accessToken: undefined, refreshToken}},
             output: {httpCode: 403, code: 'ER_ACCESS_DENIED_ERROR'},
             description: 'No accessToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: undefined}},
+            input: {cookies: {accessToken, refreshToken: undefined}},
             output: {httpCode: 403, code: 'ER_ACCESS_DENIED_ERROR'},
             description: 'No refreshToken should return Http Error 401'
         },{
@@ -136,7 +139,7 @@ const testCases = {
             output: {httpCode: 403, code: 'ER_ACCESS_DENIED_ERROR'},
             description: 'No tokens should return Http Error 401'
         },{
-            input: {cookies: {accessToken: expiredToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken: expiredAccessToken, refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_EXPIRED'},
             description: 'Expired accessToken should return Http Error 401'
         }
@@ -170,23 +173,23 @@ const testCases = {
     ],
     profile: [
         {
-            input: {cookies: {accessToken: activeToken, refreshToken: activeToken}},
+            input: {cookies: {accessToken, refreshToken}},
             output: {httpCode: 200, data: {id: 1, username: 'admin', email: 'admin@Email.com', name: 'Dwi Julianto', phone: '213546879213', address: 'Semarang, Indonesia', nik: '7722323656989'}},
             description: 'Valid tokens should return user profile with Http 200'
         },{
-            input: {cookies: {accessToken: 'invalid_token', refreshToken: activeToken}},
+            input: {cookies: {accessToken: 'invalid_token', refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid accessToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: 'invalid_token'}},
+            input: {cookies: {accessToken, refreshToken: 'invalid_token'}},
             output: {httpCode: 401, code: 'ER_JWT_MALFORMED'},
             description: 'Invalid refreshToken should return Http Error 401'
         },{
-            input: {cookies: {accessToken: undefined, refreshToken: activeToken}},
+            input: {cookies: {accessToken: undefined, refreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No accessToken should return Http Error 403'
         },{
-            input: {cookies: {accessToken: activeToken, refreshToken: undefined}},
+            input: {cookies: {accessToken, refreshToken: undefined}},
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No refreshToken should return Http Error 403'
         },{
@@ -194,7 +197,7 @@ const testCases = {
             output: {httpCode: 401, code: 'ER_JWT_NOT_FOUND'},
             description: 'No tokens should return Http Error 403'
         },{
-            input: {cookies: {accessToken: expiredToken, refreshToken: expiredToken}},
+            input: {cookies: {accessToken: expiredAccessToken, refreshToken: expiredRefreshToken}},
             output: {httpCode: 401, code: 'ER_JWT_EXPIRED'},
             description: 'Expired accessToken should return Http Error 401'
         }
@@ -207,9 +210,8 @@ const testModule = () => {
 
     // mock setCookies function because this test not using express http res.cookies() method
     const setCookies = (req) => (res, tokens) => req['result'] = new dataLogger({data: tokens})
-    const secret = {accessToken: 'SECRET_KEY', refreshToken: 'SECRET_KEY'}
 
-    const controller = (method, req, opt = [setCookies(req), secret]) => userController[method](req, res, next(req), ...opt)
+    const controller = (method, req, opt = [setCookies(req)]) => userController[method](req, res, next(req), ...opt)
 
     return {
         rotateToken: (req) => controller('rotateToken', req),
