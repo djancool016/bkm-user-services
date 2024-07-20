@@ -1,4 +1,3 @@
-const logging = require('../config').logging
 /**
  * Data-Driven Testing (DDT) for testModule classes
  */
@@ -29,7 +28,7 @@ class UnitTestFramework {
                     try {
                         let result
                         let newInput = await resolveNestedPromises(input)
-                        
+
                         if (Array.isArray(newInput)) {
                             // If input is an array, spread it as multiple parameters
                             result = async () => this.testModule[method](...newInput)
@@ -162,27 +161,54 @@ async function resolveNestedPromises(obj) {
         return obj
     }
 
-    // Create an array of promises to handle
-    const keys = Object.keys(obj)
-    const promises = keys.map(async key => {
-        const value = obj[key]
-        if (value instanceof Promise) {
-            // If the value is a promise, await it
-            return [key, await value]
-        } else if(Array.isArray(value)){
-            return [key, value]
-        }else if (typeof value === 'object') {
-            // If the value is an object, recursively resolve its properties
-            return [key, await resolveNestedPromises(value)]
-        } else {
-            // If the value is neither a promise, object, nor array, return it as-is
-            return [key, value]
-        }
-    })
+    const resolveObject = async(obj) => {
+        // Create an array of promises to handle
+        const keys = Object.keys(obj)
+        const promises = keys.map(async key => {
+            const value = obj[key]
+            if (value instanceof Promise) {
+                // If the value is a promise, await it
+                return [key, await value]
+            } else if(Array.isArray(value)){
+                return [key, value]
+            }else if (typeof value === 'object') {
+                // If the value is an object, recursively resolve its properties
+                return [key, await resolveNestedPromises(value)]
+            } else {
+                // If the value is neither a promise, object, nor array, return it as-is
+                return [key, value]
+            }
+        })
 
-    // Resolve all promises and construct a new object
-    const resolvedEntries = await Promise.all(promises)
-    return Object.fromEntries(resolvedEntries)
+        // Resolve all promises and construct a new object
+        const resolvedEntries = await Promise.all(promises)
+        return Object.fromEntries(resolvedEntries)
+    }
+
+    const resolveArray = async(arr) => {
+        // Create an array of promises to handle each element
+        const promises = arr.map(async item => {
+            if (item instanceof Promise) {
+                // If the item is a promise, await it
+                return await item
+            } else if (Array.isArray(item) || typeof item === 'object') {
+                // If the item is an array or object, recursively resolve its elements/properties
+                return await resolveNestedPromises(item)
+            } else {
+                // If the item is neither a promise, object, nor array, return it as-is
+                return item
+            }
+        })
+
+        // Resolve all promises and construct a new array
+        return await Promise.all(promises)
+    }
+
+    if(Array.isArray(obj)){
+        return await resolveArray(obj)
+    }else{
+        return await resolveObject(obj)
+    }
 }
 
 module.exports = UnitTestFramework

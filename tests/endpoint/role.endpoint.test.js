@@ -83,7 +83,7 @@ const testObj = {
         {
             method: 'PUT',
             endpoint: '/',
-            input: {id: 1, name: 'SuperAdmin'},
+            input: {id: 999, name: 'SuperAdmin'},
             output: {httpCode: 200, data: { affectedRows: 1 }},
             description: 'should update role with id 1 to name SuperAdmin'
         },

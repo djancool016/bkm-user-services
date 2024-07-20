@@ -20,7 +20,7 @@ class TokenManager {
         try {
             if(!payload || Object.keys(payload).length == 0) throw errorCode.ER_JWT_EMPTY_PAYLOAD
             if(!secret) throw errorCode.ER_JWT_EMPTY_SIGNATURE
-            if(expiresIn <= 0) throw errorCode.ER_JWT_EXPIRED
+            if(expiresIn < 0) throw errorCode.ER_JWT_EXPIRED
             return await signAsync(payload, secret, payload.exp ? {} : { expiresIn })
 
         } catch (error) {
@@ -39,6 +39,7 @@ class TokenManager {
             if (!token.startsWith('eyJ')) {
                 throw errorCode.ER_JWT_MALFORMED
             }
+
             const payload = await verifyAsync(token, secret)
             if(payload) {
                 if(!payload.iat || !payload.exp) throw errorCode.ER_JWT_EXPIRED

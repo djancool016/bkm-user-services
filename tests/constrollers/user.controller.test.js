@@ -8,8 +8,8 @@ const TokenManager = require('../../utils/tokenManager')
 
 const accessToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.ACCESS_TOKEN_SECRET)
 const refreshToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.REFRESH_TOKEN_SECRET)
-const expiredAccessToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.ACCESS_TOKEN_SECRET, 1)
-const expiredRefreshToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.REFRESH_TOKEN_SECRET, 1)
+const expiredAccessToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.ACCESS_TOKEN_SECRET, 0)
+const expiredRefreshToken = TokenManager.generateToken({id: 1, username: 'admin'}, process.env.REFRESH_TOKEN_SECRET, 0)
 
 const testCases = {
     rotateToken: [
