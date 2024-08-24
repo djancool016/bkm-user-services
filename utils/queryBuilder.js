@@ -1,4 +1,5 @@
 const {errorCode, errorHandler} = require('./customError')
+const {db_system} = require('../config')
 
 class QueryBuilder {
     constructor({table = '', includes = [], alias = [], association = []}){
@@ -21,7 +22,7 @@ class QueryBuilder {
             const keys = Object.keys(requestBody)
 
             // create placeholder for the values
-            const placeholders = keys.map(() => '?').join(', ')
+            const placeholders = keys.map((_, index) => parameterizedHandler(index + 1)).join(', ')
 
             return {
                 query: `INSERT INTO ${this.table} (${keys.join(', ')}) VALUES (${placeholders})`,
@@ -36,7 +37,7 @@ class QueryBuilder {
             if(hasEmptyValue(requestBody) || isNaN(Number(requestBody.id))) throw errorCode.ER_BAD_FIELD_ERROR
 
             return {
-                query: `SELECT ${this.select} FROM ${this.table} ${this.join} WHERE ${this.table}.id = ?`,
+                query: `SELECT ${this.select} FROM ${this.table} ${this.join} WHERE ${this.table}.id = ${parameterizedHandler(1)}`,
                 param: [requestBody.id]
             }
         } catch (error) {
@@ -85,10 +86,10 @@ class QueryBuilder {
             params.push(id)
 
             // construct placeholder for updated columns
-            const placeholder = keys.map(key => `${key} = ?`).join(', ')
+            const placeholder = keys.map((key, index) => `${key} = ${parameterizedHandler(index + 1)}`).join(', ')
 
             return {
-                query: `UPDATE ${this.table} SET ${placeholder} WHERE ${this.table}.id = ?`,
+                query: `UPDATE ${this.table} SET ${placeholder} WHERE ${this.table}.id = ${parameterizedHandler(keys.length + 1)}`,
                 param: params
             }
 
@@ -101,7 +102,7 @@ class QueryBuilder {
             if(hasEmptyValue(requestBody) || isNaN(Number(requestBody.id))) throw errorCode.ER_BAD_FIELD_ERROR
             
             return {
-                query: `DELETE FROM ${this.table} WHERE ${this.table}.id = ?`,
+                query: `DELETE FROM ${this.table} WHERE ${this.table}.id = ${parameterizedHandler(1)}`,
                 param: [requestBody.id]
             }
         } catch (error) {
@@ -177,18 +178,18 @@ function whereBuilder({table, includes, association}, requestBody, patternMatchi
 
     const operationBuilder = (value) => {
         if(Array.isArray(value)){
-            const placeholder = value.map(() => '?').join(',')
+            const placeholder = value.map((_, index) => parameterizedHandler(index + 1)).join(',')
             return `IN (${placeholder})`
         }else if(typeof value === 'string' && /^\d+(,\d+)*$/.test(value)){
-            const placeholder = value.split(',').map(() => '?').join(', ')
+            const placeholder = value.split(',').map((_, index) => parameterizedHandler(index + 1)).join(', ')
             return `IN (${placeholder})`
         }else if(typeof value === 'string' && value.includes(',')){
-            const placeholder = value.split(',').map(() => '?').join(', ')
+            const placeholder = value.split(',').map((_, index) => parameterizedHandler(index + 1)).join(', ')
             return `IN (${placeholder})`
         }else if(typeof value === 'string' && value.length > 2 && patternMatching){
-            return 'LIKE ?'
+            return `LIKE ${parameterizedHandler(1)}`
         }else{
-            return '= ?'
+            return `= ${parameterizedHandler(1)}`
         }
     }
 
@@ -231,6 +232,17 @@ function pagingBuilder(requestBody){
 function hasEmptyValue(obj) {
     if(Object.keys(obj).length < 1) return true
     return Object.values(obj).some(value => value === null || value === undefined || value === '')
+}
+
+function parameterizedHandler(paramIndex = 1){
+    switch(db_system){
+        case 'mysql':
+            return '?'
+        case 'postgres':
+            return `$${paramIndex}`
+        default:
+            throw new Error('Invalid Database System')
+    }
 }
 
 

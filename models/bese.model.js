@@ -1,7 +1,7 @@
 const { pool } = require('../database').init()
 const poolConnection = pool.createPool()
 const {errorCode, errorHandler} = require('../utils/customError')
-const logging = require('../config').logging 
+const {logging, db_system} = require('../config') 
 
 class BaseModel {
     constructor(queryBuilder) {
@@ -111,10 +111,20 @@ function resultHandler({ data, message = '', code = '' }) {
         : { status: false, message: message || 'unknown error', code: code || 'unknown code' }
 }
 
-// Execute query
+// Execute Mysql Query
 async function executeMysqlQuery(query, params = []) {
     const [result] = await poolConnection.execute(query, params)
     return result
+}
+
+async function executePostgresQuery(query, params = []) {
+    try {
+        const result = await poolConnection.query(query, params)
+        return result.rows
+    } catch (error) {
+        console.error('Error executing Postgres query:', error)
+        throw error
+    }
 }
 
 function hasEmptyValue(obj) {

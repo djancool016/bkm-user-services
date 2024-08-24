@@ -1,4 +1,4 @@
-const logging = require('../config').logging
+const {logging, db_system} = require('../config')
 
 class Seeder {
     /**
@@ -25,12 +25,17 @@ class Seeder {
                 const values = keys.map( key => obj[key])
 
                 // create placeholder for the values
-                const placeholders = keys.map(() => '?').join(', ')
+                const placeholders = keys.map((_, index) => parameterizedHandler(index + 1)).join(', ')
 
                 // create insert query
                 const query = `INSERT INTO ${table} (${keys.join(', ')}) VALUES (${placeholders})`
+                
                 // start seeding
-                await db.execute(query, values)
+                if (db_system === 'mysql') {
+                    await db.execute(query, values)
+                } else if (db_system === 'postgres') {
+                    await db.query(query, values)
+                }
             })
 
             // using Promise.all to reduce potential race condition
@@ -58,6 +63,17 @@ class Seeder {
             if(logging) console.error(error.message)
             throw error
         }
+    }
+}
+
+function parameterizedHandler(paramIndex = 1){
+    switch(db_system){
+        case 'mysql':
+            return '?'
+        case 'postgres':
+            return `$${paramIndex}`
+        default:
+            throw new Error('Invalid Database System')
     }
 }
 

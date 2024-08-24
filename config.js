@@ -18,8 +18,10 @@ const config = {
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
-        database: process.env.DB
+        database: process.env.DB,
+        port: process.env.PORT
     },
+    db_system: process.env.DB_SYSTEM,
     logging: process.env.CONSOLE_LOG === '1',
     resetTables: process.env.TRUNCATING === '1',
     migrating: process.env.MIGRATING === '1',
